@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const { Schema } = mongoose
+const validator = require('validator');
 
 const userSchema = new Schema(
     {
@@ -20,8 +21,11 @@ const userSchema = new Schema(
             required: true,
             lowercase: true,
             trim: true,
-            minLength: 6,
-            maxLength: 50
+            validate(value) {
+                if (!validator.isEmail(value)) {
+                    throw new Error("Enter a Email address: " + value)
+                }
+            }
 
 
         },
@@ -48,15 +52,22 @@ const userSchema = new Schema(
         password: {
             type: String,
             required: true,
-            minLength: 8,
-            maxLength: 30
+            validate(value) {
+                if (!validator.isStrongPassword(value)) {
+                    throw new Error("Enter a strong password")
+                }
+            }
 
 
         },
         photoUrl: {
             type: String,
-            default: "ttps://media.istockphoto.com/id/2151669184/vector/vector-flat-illustration-in-grayscale-avatar-user-profile-person-icon-gender-neutral.jpg?s=612x612&w=0&k=20&c=UEa7oHoOL30ynvmJzSCIPrwwopJdfqzBs0q69ezQoM8="
-
+            default: "https://media.istockphoto.com/id/2151669184/vector/vector-flat-illustration-in-grayscale-avatar-user-profile-person-icon-gender-neutral.jpg?s=612x612&w=0&k=20&c=UEa7oHoOL30ynvmJzSCIPrwwopJdfqzBs0q69ezQoM8=",
+            validate(value) {
+                if (!validator.isURL(value)) {
+                    throw new Error("Enter a valid photo Url " + value)
+                }
+            }
 
         },
         about: {
@@ -68,7 +79,6 @@ const userSchema = new Schema(
         },
         skills: {
             type: [String],
-            maxLength: 30
 
         }
     },

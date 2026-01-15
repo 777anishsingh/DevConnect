@@ -9,19 +9,34 @@ app.use(express.json())
 
 //PATCH /user
 
-app.patch('/user', async (req, res) => {
-    const userId = req.body.userId
-    const user = req.body
+app.patch('/user/:userId', async (req, res) => {
+    const userId = req.params?.userId
+    const data = req.body
+
+
     try {
-        const updatedUser = await User.findByIdAndUpdate(userId, user, { returnDocument: 'after', runValidators: true })
+        const UPDATE_INTERFACE = ["photoUrl", "about", "skills", "age"]
+        const isValidUpdate = Object.keys(data).every((k) =>
+            UPDATE_INTERFACE.includes(k)
+        )
+
+        if (!isValidUpdate) {
+            throw new Error("Update not allowed")
+        }
+
+        if (data.skills && data?.skills.length > 10) {
+            throw new Error("Only 10 skills are allowed to enter")
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(userId, data, { returnDocument: 'after', runValidators: true })
         console.log(updatedUser);
         res.send("User Data Updated Successfully")
+
     }
     catch (err) {
-        res.status(400).send('Error found: ' + err);
+        res.status(400).send('Update failed: ' + err);
     }
 })
-
 
 //DELETE /user
 app.delete('/user', async (req, res) => {
@@ -39,7 +54,6 @@ app.delete('/user', async (req, res) => {
         res.status(400).send('Something went wrong');
     }
 })
-
 
 // GET /user
 app.get('/user', async (req, res) => {
@@ -72,7 +86,12 @@ app.get('/feed', async (req, res) => {
 // POST /signup
 app.post('/signup', async (req, res) => {
     const user = new User(req.body);
+
     try {
+        if (user?.skills.length > 10) {
+            throw new Error("Only 10 skills are allowed to enter")
+        }
+
         await user.save();
         res.send('User Created Successfully')
 
@@ -92,6 +111,3 @@ connectDB().then(() => {
 }).catch(err => {
     console.error("DB connection not successful")
 })
-
-
-
