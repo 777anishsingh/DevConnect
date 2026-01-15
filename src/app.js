@@ -3,27 +3,82 @@ const connectDB = require("./config/database")
 const express = require('express')
 const app = express()
 const User = require('./model/user')
+app.use(express.json())
 
 
+
+//PATCH /user
+
+app.patch('/user', async (req, res) => {
+    const userId = req.body.userId
+    const user = req.body
+    try {
+        const updatedUser = await User.findByIdAndUpdate(userId, user, { returnDocument: 'after', runValidators: true })
+        console.log(updatedUser);
+        res.send("User Data Updated Successfully")
+    }
+    catch (err) {
+        res.status(400).send('Error found: ' + err);
+    }
+})
+
+
+//DELETE /user
+app.delete('/user', async (req, res) => {
+    const userId = req.body.userId
+    try {
+        const user = await User.findByIdAndDelete(userId)
+        if (!user) {
+            res.status(404).send('User not found');
+        } else {
+
+            res.send("User deleted successfully")
+        }
+    }
+    catch (err) {
+        res.status(400).send('Something went wrong');
+    }
+})
+
+
+// GET /user
+app.get('/user', async (req, res) => {
+
+    const email = req.body.emailId;
+    try {
+        const user = await User.findOne({ emailId: email })
+        if (!user) {
+            res.status(404).send('User not found');
+        } else {
+            res.send(user)
+        }
+    }
+    catch (err) {
+        res.status(400).send('Something went wrong');
+    }
+})
+
+// GET /feed
+app.get('/feed', async (req, res) => {
+    try {
+        const users = await User.find({})
+        res.send(users)
+    }
+    catch (err) {
+        res.status(400).send('Something went wrong');
+    }
+})
+
+// POST /signup
 app.post('/signup', async (req, res) => {
-    const user = new User({
-        firstName: 'Laxmi',
-        lastName: 'Rana',
-        emailId: 'luxmi.sonu@gmail.com',
-        age: 49,
-        gender: 'Female',
-        password: '1212232'
-    })
-
+    const user = new User(req.body);
     try {
         await user.save();
         res.send('User Created Successfully')
 
     } catch (err) {
-        res.status(400).send('Error saving user details');
+        res.status(400).send('Error saving user details' + err);
     }
-
-
 })
 
 
