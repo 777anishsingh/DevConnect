@@ -87,9 +87,9 @@ userSchema.methods.validatePassword = async function (passwordByUser) {
 
     const user = this;
     const hashedPassword = user.password
-    const passwordAuth = await bcrypt.compare(passwordByUser, hashedPassword)
+    const isPasswordValid = await bcrypt.compare(passwordByUser, hashedPassword)
 
-    return passwordAuth
+    return isPasswordValid
 }
 
 module.exports = mongoose.model('User', userSchema)
